@@ -925,6 +925,7 @@ accumulate_short(struct interface *ifp, unsigned short value)
 {
     DO_HTONS(ifp->sendbuf + ifp->buffered, value);
     ifp->buffered += 2;
+    printf("accumulate short: %X\n", value);
 }
 
 static void
@@ -932,6 +933,7 @@ accumulate_int(struct interface *ifp, unsigned int value)
 {
     DO_HTONL(ifp->sendbuf + ifp->buffered, value);
     ifp->buffered += 4;
+    printf("accumulate int: %X\n", value);
 }
 
 static void
@@ -1032,11 +1034,17 @@ send_hello_noupdate(struct interface *ifp, unsigned interval)
     debugf("Sending hello %d (%d) to %s.\n",
            ifp->hello_seqno, interval, ifp->name);
 
-    start_message(ifp, MESSAGE_HELLO, (ifp->flags & IF_TIMESTAMPS) ? 12 : 6);
+    printf("Start Message Hello\n");
+    start_message(ifp, MESSAGE_HELLO, (ifp->flags & IF_TIMESTAMPS) ? 12 + 5 : 6 + 5);
     ifp->buffered_hello = ifp->buffered - 2;
     accumulate_short(ifp, 0);
     accumulate_short(ifp, ifp->hello_seqno);
     accumulate_short(ifp, interval > 0xFFFF ? 0xFFFF : interval);
+    accumulate_byte(ifp, 'H');
+    accumulate_byte(ifp, 'e');
+    accumulate_byte(ifp, 'l');
+    accumulate_byte(ifp, 'l');
+    accumulate_byte(ifp, 'o');
     if(ifp->flags & IF_TIMESTAMPS) {
         /* Sub-TLV containing the local time of emission. We use a
            Pad4 sub-TLV, which we'll fill just before sending. */
@@ -1044,7 +1052,8 @@ send_hello_noupdate(struct interface *ifp, unsigned interval)
         accumulate_byte(ifp, 4);
         accumulate_int(ifp, 0);
     }
-    end_message(ifp, MESSAGE_HELLO, (ifp->flags & IF_TIMESTAMPS) ? 12 : 6);
+    end_message(ifp, MESSAGE_HELLO, (ifp->flags & IF_TIMESTAMPS) ? 12 + 5 : 6 + 5);
+    printf("End Message Hello\n");
 }
 
 void
