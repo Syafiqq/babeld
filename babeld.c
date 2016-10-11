@@ -966,17 +966,17 @@ schedule_interfaces_check(int msecs, int override)
 int
 resize_receive_buffer(int size)
 {
-    unsigned char *new;
+    unsigned char *_new;
 
     if(size <= receive_buffer_size)
         return 0;
 
-    new = realloc(receive_buffer, size);
-    if(new == NULL) {
+    _new = realloc(receive_buffer, size);
+    if(_new == NULL) {
         perror("realloc(receive_buffer)");
         return -1;
     }
-    receive_buffer = new;
+    receive_buffer = _new;
     receive_buffer_size = size;
 
     return 1;
